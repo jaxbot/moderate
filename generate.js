@@ -28,6 +28,10 @@ fs.readdir('input/', function(err, files){
 			scope.description = frontMatter.description || scope.description;
 			scope.date = frontMatter.date;
 			scope.img = frontMatter.img || "";
+
+			if (scope.img)
+				scope.img = config.base + scope.img;
+
 			scope.contents = varFill(postfile, scope);
 		}
 
