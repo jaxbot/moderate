@@ -27,7 +27,7 @@ fs.readdir('input/', function(err, files){
 			scope.title = frontMatter.title;
 			scope.description = frontMatter.description || scope.description;
 			scope.date = frontMatter.date;
-			scope.img = frontMatter.img || "";
+			scope.img = frontMatter.img || scope.img;
 
 			if (scope.img)
 				scope.img = config.base + scope.img;
