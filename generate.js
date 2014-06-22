@@ -37,17 +37,31 @@ fs.readdir('input/', function(err, files){
 		var img = "";
 
 		if (filename != "index") {
-			sitemapdata += "<url><loc>" + config.base + "articles/" + filename + "</loc>" + (img ? "<image:image><image:loc>" + img + "</image:loc></image:image>" : "") + "</url>\n";
-			rssdata += "<item><link>" + config.base + "articles/" + filename + "</link><title>" + scope.title + "</title></item>";
+			sitemapdata += "<url>" + 
+				"<loc>" + config.base + "articles/" + filename + "</loc>" +
+				(img ? "<image:image><image:loc>" + img + "</image:loc></image:image>" : "") +
+				"</url>\n";
+			rssdata += "<item>" +
+				"<link>" + config.base + "articles/" + filename + "</link>" + 
+				"<title>" + scope.title + "</title>" +
+				"</item>";
 		}
 	}
 
-	fs.writeFileSync('output/sitemap.xml', "<?xml version='1.0' encoding='UTF-8'?>" +
+	fs.writeFileSync('output/sitemap.xml',
+		"<?xml version='1.0' encoding='UTF-8'?>" +
 		"<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" " +
-		"xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">" + sitemapdata + "</urlset>");
+		"xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">" +
+		sitemapdata +
+		"</urlset>");
 
-	fs.writeFileSync('output/rss.xml', "<?xml version='1.0' encoding='UTF-8'?><rss version=\"2.0\"><channel><title>" + config.title + "</title>" +
-			"<description>" + config.description + "</description><link>" + config.base + "</link>" + rssdata + "</channel></rss>");
+	fs.writeFileSync('output/rss.xml',
+		"<?xml version='1.0' encoding='UTF-8'?>" +
+		"<rss version=\"2.0\"><channel>" +
+		"<title>" + config.title + "</title>" +
+		"<description>" + config.description + "</description>" +
+		"<link>" + config.base + "</link>" + rssdata +
+		"</channel></rss>");
 
 });
 
