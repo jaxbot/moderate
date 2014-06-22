@@ -1,4 +1,4 @@
-var config = require("./config");
+var config = require("../moderate");
 
 if (process.argv[2] == "devel")
 	config.base = config.baseDevel;
