@@ -33,6 +33,8 @@ fs.readdir('input/', function(err, files){
 				scope.img = config.base + scope.img;
 
 			scope.contents = varFill(postfile, scope);
+		} else {
+			scope.contents = scope.insides;
 		}
 
 		scope.contents = varFill(indexfile, scope);
