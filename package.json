@@ -1,0 +1,24 @@
+{
+  "name": "Moderate",
+  "version": "0.0.0",
+  "description": "My hown-grown organic CMS for Jaxbot.me and Okaysass.com",
+  "main": "generate.js",
+  "dependencies": {
+    "yamljs": "^0.1.5",
+    "marked": "^0.2.10"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jaxbot/moderate"
+  },
+  "author": "Jonathan Warner (Jaxbot)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jaxbot/moderate/issues"
+  },
+  "homepage": "https://github.com/jaxbot/moderate"
+}
