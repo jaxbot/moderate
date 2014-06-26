@@ -13,6 +13,8 @@ var postfile = fs.readFileSync("template/post.html").toString();
 var sitemapdata = "";
 var rssdata = "";
 
+var index = [];
+
 fs.readdir('input/', function(err, files){
 	for (var i=0; i < files.length; i++) {
 		var filename = files[i].substring(0, files[i].length - 3);
@@ -24,15 +26,19 @@ fs.readdir('input/', function(err, files){
 
 		if (filename !== "index") {
 			var frontMatter = YAML.parse(/---([\s\S]+)---/g.exec(insides)[1]);
+			scope.file = files[i];
 			scope.title = frontMatter.title;
 			scope.description = frontMatter.description || scope.description;
 			scope.date = frontMatter.date;
+			scope.featured = frontMatter.featured;
 			scope.img = frontMatter.img || scope.img;
 
 			if (scope.img)
 				scope.img = config.base + scope.img;
 
 			scope.contents = varFill(postfile, scope);
+
+			index.push(scope);
 		} else {
 			scope.contents = scope.insides;
 		}
@@ -54,6 +60,25 @@ fs.readdir('input/', function(err, files){
 				"</item>";
 		}
 	}
+
+	index = index.sort(function (a, b) {
+		return Date.parse(b.date) - Date.parse(a.date);
+	});
+
+	var log = "";
+	var scope = Object.create(config);
+
+	for (var i = 0; i < index.length; i++) {
+		var date = new Date(Date.parse(index[i].date));
+		date = date.getMonth() + "-" + date.getDate() + "-" + (2000 + date.getYear() - 100);
+
+		log += '<li>' + date + ' <a href="' + index[i].file + '">' + index[i].title + '</a></li>';
+	}
+
+	scope.log = "<ul>" + log + "</ul>";
+	scope.contents = varFill(fs.readFileSync("template/log.html").toString(), scope);
+
+	fs.writeFileSync("output/log.html", varFill(indexfile, scope));
 
 	fs.writeFileSync('output/sitemap.xml',
 		"<?xml version='1.0' encoding='UTF-8'?>" +
