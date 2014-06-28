@@ -27,6 +27,7 @@ fs.readdir('input/', function(err, files){
 		if (filename !== "index") {
 			var frontMatter = YAML.parse(/---([\s\S]+)---/g.exec(insides)[1]);
 			scope.file = files[i];
+			scope.filename = filename;
 			scope.title = frontMatter.title;
 			scope.description = frontMatter.description || scope.description;
 			scope.date = frontMatter.date;
@@ -72,7 +73,7 @@ fs.readdir('input/', function(err, files){
 		var date = new Date(Date.parse(index[i].date));
 		date = date.getMonth() + "-" + date.getDate() + "-" + (2000 + date.getYear() - 100);
 
-		log += '<li>' + date + ' <a href="' + index[i].file + '">' + index[i].title + '</a></li>';
+		log += '<li>' + date + ' <a href="articles/' + index[i].filename + '">' + index[i].title + '</a></li>';
 	}
 
 	scope.log = "<ul>" + log + "</ul>";
