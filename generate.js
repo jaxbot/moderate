@@ -77,7 +77,7 @@ fs.readdir('input/', function(err, files){
 	}
 
 	scope.log = "<ul>" + log + "</ul>";
-	scope.contents = varFill(fs.readFileSync("template/log.html").toString(), scope);
+	scope.contents = varFill(fs.readFileSync("template/" + config.index + ".html").toString(), scope);
 
 	fs.writeFileSync("output/log.html", varFill(indexfile, scope));
 
