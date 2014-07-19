@@ -9,11 +9,13 @@ var fs = require("fs");
 
 var indexfile = fs.readFileSync("template/index.html").toString();
 var postfile = fs.readFileSync("template/post.html").toString();
+var inlinepostfile = fs.readFileSync("template/inlinepost.html").toString();
 
 var sitemapdata = "";
 var rssdata = "";
 
 var index = [];
+var categories = [];
 
 fs.readdir('input/', function(err, files){
 	for (var i=0; i < files.length; i++) {
@@ -33,6 +35,14 @@ fs.readdir('input/', function(err, files){
 			scope.date = frontMatter.date;
 			scope.featured = frontMatter.featured;
 			scope.img = frontMatter.img || scope.img;
+			scope.categories = frontMatter.categories || "";
+
+			var c = scope.categories.split(",");
+			for (var j = 0; j < c.length; j++) {
+				if (c[j] && categories.indexOf(c[j]) == -1) {
+					categories.push(c[j]);
+				}
+			}
 
 			if (scope.img)
 				scope.img = config.base + scope.img;
@@ -69,6 +79,8 @@ fs.readdir('input/', function(err, files){
 	var log = "";
 	var scope = Object.create(config);
 
+	console.log(categories);
+
 	for (var i = 0; i < index.length; i++) {
 		var date = new Date(Date.parse(index[i].date));
 		date = date.getMonth() + "-" + date.getDate() + "-" + (2000 + date.getYear() - 100);
@@ -80,6 +92,20 @@ fs.readdir('input/', function(err, files){
 	scope.contents = varFill(fs.readFileSync("template/" + config.index + ".html").toString(), scope);
 
 	fs.writeFileSync("output/log.html", varFill(indexfile, scope));
+
+	var indexpage = "";
+	scope = Object.create(config);
+
+	console.log(categories);
+
+	for (var i = 0; i < index.length; i++) {
+		if (index[i].featured)
+			indexpage += varFill(inlinepostfile, index[i]);
+	}
+
+	indexpage = "<div class='posts'>" + indexpage + "</div>";
+
+	fs.writeFileSync("output/index.html", varFill(indexfile, { contents: indexpage, title: config.title }));
 
 	fs.writeFileSync('output/sitemap.xml',
 		"<?xml version='1.0' encoding='UTF-8'?>" +
