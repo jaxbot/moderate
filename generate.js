@@ -7,9 +7,11 @@ var marked = require("marked");
 var YAML = require("yamljs");
 var fs = require("fs");
 
-var indexfile = fs.readFileSync("template/index.html").toString();
+var indexfile = fs.readFileSync("template/page.html").toString();
+var indextemplate = fs.readFileSync("template/index.html").toString();
 var postfile = fs.readFileSync("template/post.html").toString();
-var inlinepostfile = fs.readFileSync("template/inlinepost.html").toString();
+var inlinepostfile = t(fs.readFileSync("template/inlinepost.html").toString());
+var inlinepost = new Function("it", inlinepostfile);
 
 var sitemapdata = "";
 var rssdata = "";
@@ -44,8 +46,10 @@ fs.readdir('input/', function(err, files){
 				}
 			}
 
-			if (scope.img)
+			if (scope.img != config.img)
 				scope.img = config.base + scope.img;
+			else
+				scope.img = '';
 
 			scope.contents = varFill(postfile, scope);
 
@@ -79,8 +83,6 @@ fs.readdir('input/', function(err, files){
 	var log = "";
 	var scope = Object.create(config);
 
-	console.log(categories);
-
 	for (var i = 0; i < index.length; i++) {
 		var date = new Date(Date.parse(index[i].date));
 		date = date.getMonth() + "-" + date.getDate() + "-" + (2000 + date.getYear() - 100);
@@ -94,18 +96,29 @@ fs.readdir('input/', function(err, files){
 	fs.writeFileSync("output/log.html", varFill(indexfile, scope));
 
 	var indexpage = "";
+	var thinposts = [];
 	scope = Object.create(config);
 
-	console.log(categories);
-
 	for (var i = 0; i < index.length; i++) {
+		index[i].display = index[i].featured ? "inline-block" : "none";
+		var thinpost = { title: index[i].title, img: index[i].img, featured: index[i].featured, categories: index[i].categories, filename: index[i].filename };
+		if (!thinpost.img) {
+			thinpost.description = index[i].description;
+		}
 		if (index[i].featured)
-			indexpage += varFill(inlinepostfile, index[i]);
+			indexpage += inlinepost(thinpost);
+		thinposts.push(thinpost);
+		
 	}
 
-	indexpage = "<div class='posts'>" + indexpage + "</div>";
+	indexpage = "<div class='posts' id='posts'>" + indexpage + "</div>";
 
-	fs.writeFileSync("output/index.html", varFill(indexfile, { contents: indexpage, title: config.title }));
+	scope.contents = indexpage;
+	scope.posts = JSON.stringify(thinposts);
+	scope.posttemplate = JSON.stringify(inlinepostfile);
+	scope.contents = varFill(indextemplate, scope);
+
+	fs.writeFileSync("output/index.html", varFill(indexfile, scope));
 
 	fs.writeFileSync('output/sitemap.xml',
 		"<?xml version='1.0' encoding='UTF-8'?>" +
@@ -128,5 +141,50 @@ function varFill(input, scope) {
 	return input.replace(/\{\{(\w+)\}\}/g, function (expr, variable) {
 		return scope[variable];
 	});
+}
+
+/*
+ * string -> html = "string"
+ * {{ expression }} -> " + expression + "
+ * <script>expression</script> -> "; (expression) html += "
+ */
+function t(data) {
+	var obj = "" + data;
+	obj = obj.replace(/\"/g, "\\\"");
+
+	obj = obj.replace(/\$/g, "it.");
+
+	obj = obj.replace(/\{([^\n}]*)\}/g, function(match,m1) {
+		return "\"+" + m1 + "+\"";
+	});
+
+	obj = obj.replace(/(\<\%\ if\ )(\((.*)\))(\ \%\>)/g, function(match,m1, m2) {
+		return "\"+((" + m2.replace(/\\\"/g, "\"") + ")?(\"";
+	});
+
+	obj = obj.replace(/(\<\%\ endif\ \%\>)/g, function(match,m1, m2) {
+		return "\"):\"\")+\"";
+	});
+
+	obj = obj.replace(/(\<\%\ else\ \%\>)/g, function(match,m1, m2) {
+		return "\"):(\"";
+	});
+
+	obj = obj.replace(/(\<\%\ endelse\ \%\>)/g, function(match,m1, m2) {
+		return "\"))+\"";
+	});
+
+	obj = obj.replace(/<\?((.|\n|\r)*?)\?\>/g, function(match) {
+		return match.replace(/\\\"/g, "\"");
+	});
+
+	obj = obj.replace(/\<\?/g, "\";");
+	obj = obj.replace(/\?\>/g, "html+=\"");
+
+	obj = obj.replace(/\n/gm, "");
+	obj = obj.replace(/\r/gm, "");
+	obj = obj.replace(/\t/gm, "");
+
+	return "var html = \"" + obj + "\";return html;";
 }
 
