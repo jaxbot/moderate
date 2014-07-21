@@ -7,12 +7,6 @@ var marked = require("marked");
 var YAML = require("yamljs");
 var fs = require("fs");
 
-var indexfile = fs.readFileSync("template/page.html").toString();
-var indextemplate = fs.readFileSync("template/index.html").toString();
-var postfile = fs.readFileSync("template/post.html").toString();
-var inlinepostfile = t(fs.readFileSync("template/inlinepost.html").toString());
-var inlinepost = new Function("it", inlinepostfile);
-
 var sitemapdata = "";
 var rssdata = "";
 
@@ -51,14 +45,14 @@ fs.readdir('input/', function(err, files){
 			else
 				scope.img = '';
 
-			scope.contents = varFill(postfile, scope);
+			scope.contents = T("post")(scope);
 
 			index.push(scope);
 		} else {
 			scope.contents = scope.insides;
 		}
 
-		scope.contents = varFill(indexfile, scope);
+		scope.contents = T("page")(scope);
 
 		fs.writeFileSync('output/' + filename + ".html", scope.contents);
 
@@ -91,9 +85,9 @@ fs.readdir('input/', function(err, files){
 	}
 
 	scope.log = "<ul>" + log + "</ul>";
-	scope.contents = varFill(fs.readFileSync("template/" + config.index + ".html").toString(), scope);
+	scope.contents = T(config.index)(scope);
 
-	fs.writeFileSync("output/log.html", varFill(indexfile, scope));
+	fs.writeFileSync("output/log.html", T("page")(scope));
 
 	var indexpage = "";
 	var thinposts = [];
@@ -106,7 +100,7 @@ fs.readdir('input/', function(err, files){
 			thinpost.description = index[i].description;
 		}
 		if (index[i].featured)
-			indexpage += inlinepost(thinpost);
+			indexpage += T("inlinepost")(thinpost);
 		thinposts.push(thinpost);
 		
 	}
@@ -115,10 +109,10 @@ fs.readdir('input/', function(err, files){
 
 	scope.contents = indexpage;
 	scope.posts = JSON.stringify(thinposts);
-	scope.posttemplate = JSON.stringify(inlinepostfile);
-	scope.contents = varFill(indextemplate, scope);
+	scope.posttemplate = JSON.stringify(getTemplate("inlinepost"));
+	scope.contents = T("index")(scope);
 
-	fs.writeFileSync("output/index.html", varFill(indexfile, scope));
+	fs.writeFileSync("output/index.html", T("page")(scope));
 
 	fs.writeFileSync('output/sitemap.xml',
 		"<?xml version='1.0' encoding='UTF-8'?>" +
@@ -136,12 +130,6 @@ fs.readdir('input/', function(err, files){
 		"</channel></rss>");
 
 });
-
-function varFill(input, scope) {
-	return input.replace(/\{\{(\w+)\}\}/g, function (expr, variable) {
-		return scope[variable];
-	});
-}
 
 /*
  * string -> html = "string"
@@ -186,5 +174,21 @@ function t(data) {
 	obj = obj.replace(/\t/gm, "");
 
 	return "var html = \"" + obj + "\";return html;";
+}
+
+function getTemplate(template) {
+	if (!module.templateCache)
+		module.templateCache = {}
+
+	var c;
+	if (c = module.templateCache[template])
+		return c;
+	c = t(fs.readFileSync("template/" + template + ".html"));
+
+	return module.templateCache[template] = c;
+}
+
+function T(template) {
+	return new Function("it", getTemplate(template));
 }
 
