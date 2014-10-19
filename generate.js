@@ -32,6 +32,7 @@ fs.readdir('input/', function(err, files){
 			scope.featured = frontMatter.featured;
 			scope.img = frontMatter.img || scope.img;
 			scope.categories = frontMatter.categories || "";
+			scope.url = scope.base + "articles/" + filename;
 
 			var c = scope.categories.split(",");
 			for (var j = 0; j < c.length; j++) {
@@ -108,6 +109,7 @@ fs.readdir('input/', function(err, files){
 	indexpage = "<div class='posts' id='posts'>" + indexpage + "</div>";
 
 	scope.contents = indexpage;
+	scope.url = scope.base;
 	scope.posts = JSON.stringify(thinposts);
 	scope.posttemplate = JSON.stringify(getTemplate("inlinepost"));
 	scope.contents = T("index")(scope);
