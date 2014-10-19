@@ -97,9 +97,7 @@ fs.readdir('input/', function(err, files){
 	for (var i = 0; i < index.length; i++) {
 		index[i].display = index[i].featured ? "inline-block" : "none";
 		var thinpost = { title: index[i].title, img: index[i].img, featured: index[i].featured, categories: index[i].categories, filename: index[i].filename };
-		if (!thinpost.img) {
-			thinpost.description = index[i].description;
-		}
+		thinpost.description = index[i].description;
 		if (index[i].featured)
 			indexpage += T("inlinepost")(thinpost);
 		thinposts.push(thinpost);
