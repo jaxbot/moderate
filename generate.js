@@ -1,4 +1,4 @@
-var config = require("../moderate");
+var config = require("../moderate.json");
 
 if (process.argv[2] == "devel")
 	config.base = config.baseDevel;
@@ -32,6 +32,7 @@ fs.readdir('input/', function(err, files){
 			scope.featured = frontMatter.featured;
 			scope.img = frontMatter.img || scope.img;
 			scope.categories = frontMatter.categories || "";
+			scope.type = frontMatter.type || "";
 			scope.url = scope.base + "articles/" + filename;
 
 			var c = scope.categories.split(",");
@@ -90,7 +91,9 @@ fs.readdir('input/', function(err, files){
 
 	fs.writeFileSync("output/log.html", T("page")(scope));
 
-	var indexpage = "";
+	var bloghtml = "";
+	var noteshtml = "";
+	var projecthtml = "";
 	var thinposts = [];
 	scope = Object.create(config);
 
@@ -98,15 +101,25 @@ fs.readdir('input/', function(err, files){
 		index[i].display = index[i].featured ? "inline-block" : "none";
 		var thinpost = { title: index[i].title, img: index[i].img, featured: index[i].featured, categories: index[i].categories, filename: index[i].filename };
 		thinpost.description = index[i].description;
-		if (index[i].featured)
-			indexpage += T("inlinepost")(thinpost);
+		var html = T("inlinepost")(thinpost);
+		console.log(index[i]);
+		if (index[i].type == "notes") {
+			noteshtml += html;
+		} else if (index[i].type == "project") {
+			projecthtml += html;
+		} else {
+			bloghtml += html;
+		}
 		thinposts.push(thinpost);
-		
 	}
 
-	indexpage = "<div class='posts' id='posts'>" + indexpage + "</div>";
+	projecthtml = "<div class='posts-list' id='posts'><ul>" + projecthtml + "</ul></div>";
+	bloghtml = "<div class='posts-list' id='posts'><ul>" + bloghtml + "</ul></div>";
+	noteshtml = "<div class='posts-list' id='posts'><ul>" + noteshtml + "</ul></div>";
 
-	scope.contents = indexpage;
+	scope.notes = noteshtml;
+	scope.projects = projecthtml;
+	scope.blog = bloghtml;
 	scope.url = scope.base;
 	scope.posts = JSON.stringify(thinposts);
 	scope.posttemplate = JSON.stringify(getTemplate("inlinepost"));
