@@ -107,7 +107,7 @@ fs.readdir('input/', function(err, files){
 			noteshtml += html;
 		} else if (index[i].type == "project") {
 			projecthtml += html;
-		} else {
+		} else if (index[i].featured) {
 			bloghtml += html;
 		}
 		thinposts.push(thinpost);
